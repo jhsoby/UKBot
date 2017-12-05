@@ -7,6 +7,8 @@ default_prefix: fi
 db:
     host: tools-db
     db: SOME-USERNAME__uk
+    user: USERNAME
+    password: PASSWORD
 plot:
     datafile: ../plots/no.json
     figname: 'Nowp Ukens konkurranse %(year)d-%(week)02d.svg'
@@ -80,9 +82,11 @@ templates:
         redirect: omdirigering
         refsectionfi: refsectionfi
         qualified: kvalifisert
+        contrib: endring
         byte: byte
         word: ord
         maxpoints: makspoeng
+        site: nettsted
         image: bilde
         external_link: ekstern lenke
         ref: ref
@@ -113,6 +117,7 @@ pages:
     base: Wikipedia:Ukens konkurranse/Ukens konkurranse
     default: Wikipedia:Ukens konkurranse/Ukens konkurranse %(year)d-%(week)02d
     redirect: WP:UK
+    active_contests_category: Category:UKB active contests
 contestPages:
     resultsSection: Resultater
     participantsSection: 'Delta[kg]ere'
@@ -129,3 +134,5 @@ noticeboard:
         date: dato
 ignore:
     - Reverted edits by  # MediaWiki:Revertpage/en
+    - clientsitelink-update  # Wikidata: Page moved from .. to ..
+    - clientsitelink-remove  # Wikidata: Removed sitelink

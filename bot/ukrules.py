@@ -8,6 +8,10 @@ from mwtextextractor import condition_for_lxml
 from ukcommon import init_localization
 from ukcommon import log
 import urllib
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 t, _ = init_localization()
 
@@ -158,6 +162,16 @@ class QualiRule(Rule):
             rev.points.append([self.points, 'quali', _('qualified')])
 
 
+class ContribRule(Rule):
+
+    def __init__(self, key, points):
+        Rule.__init__(self, key)
+        self.points = float(points)
+
+    def test(self, rev):
+        rev.points.append([self.points, 'contrib', _('contribution')])
+
+
 class ByteRule(Rule):
 
     def __init__(self, key, points, maxpoints=-1):
@@ -243,28 +257,32 @@ class ImageRule(Rule):
                 try:
                     uploader = imageinfo['user']
                 except KeyError:
-                    log("ERR: Could not locate user for file '%s' in rev. %s " % (filename, rev.revid))
+                    logger.error("Could not locate user for file '%s' in rev. %s ",
+                                 filename, rev.revid)
                     continue
 
-                log("- File '%s' uploaded by '%s', revision made by '%s'" % (filename, uploader, rev.username))
+                logger.debug("File '%s' uploaded by '%s', revision made by '%s'",
+                            filename, uploader, rev.username)
                 if uploader == rev.username:
-                    #print "own image!"
-                    #own_imgs_added.append(filename)
                     credit = ''
                     extrainfo = rev.article.site.api('query', prop='imageinfo', titles=u'File:{}'.format(filename), iiprop='extmetadata')
                     try:
-                        credit = extrainfo['query']['pages']['-1']['imageinfo'][0]['extmetadata']['Credit']['value']
+                        for pageid, page  in extrainfo['query']['pages'].items():
+                            credit = page['imageinfo'][0]['extmetadata']['Credit']['value']
                     except KeyError:
-                        pass
+                        logger.debug("Could not read credit info for file '%s'", filename)
 
-                    if re.search('int-own-work', credit, re.I):
+                    if 'int-own-work' in credit or 'Itse otettu valokuva' in credit:
+                        logger.debug("File '%s' identified as own work.", filename)
                         counters['ownwork'].append(filename)
                     else:
+                        logger.debug("File '%s' identified as own upload, but not own work.", filename)
                         counters['own'].append(filename)
                 else:
+                    logger.debug("File '%s' not identified as own upload or own work.", filename)
                     counters['other'].append(filename)
             else:
-                log("- File '%s' does not exist" % (filename))
+                logger.warning("File '%s' does not exist", filename)
 
 
         # If maxinitialcount is 0, only the first image counts.

@@ -50,10 +50,10 @@ if args.page is not None:
 else:
     log('  No page specified. Using default page')
     ktitle = config['pages']['default']
-    # subtract one hour, so we close last week's contest right after midnight
+    # subtract a few hours, so we close last week's contest right after midnight
     #ktitle = (now - timedelta(hours=1)).astimezone(wiki_tz).strftime(ktitle.encode('utf-8')).decode('utf-8')
     ktitle = config['pages']['default']
-    w = Week.withdate((now - timedelta(hours=1)).astimezone(wiki_tz).date())
+    w = Week.withdate((now - timedelta(hours=3)).astimezone(wiki_tz).date())
     # subtract one hour, so we close last week's contest right after midnight
     ktitle = ktitle % { 'year': w.year, 'week': w.week }
 
@@ -73,7 +73,7 @@ if not kpage.exists:
 ibcfg = config['templates']['infobox']
 commonargs = config['templates']['commonargs']
 
-dp = TemplateEditor(kpage.edit())
+dp = TemplateEditor(kpage.text())
 try:
     infoboks = dp.templates[ibcfg['name']][0]
 except:
@@ -125,8 +125,7 @@ if startweek != endweek:
     weeks += "-%s" % endweek
 pagetext = config['plot']['description'] % { 'pagename': ktitle, 'week': weeks, 'year': year, 'start': start.strftime('%F') }
 
-commons = mwclient.Site('commons.wikimedia.org')
-commons.login(config['account']['user'], config['account']['pass'])
+commons = mwclient.Site('commons.wikimedia.org', **config['account'])
 
 p = commons.pages['File:' + remote_filename]
 f = open(filename.encode('utf-8'), 'rb')
